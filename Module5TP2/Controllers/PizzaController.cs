@@ -35,7 +35,15 @@ namespace Module5TP2.Controllers
         // GET: Pizza/Create
         public ActionResult Create()
         {
-            return View(new PizzaVM(new Pizza { Id = pizzas.Count}));
+            PizzaVM pizzaVm = new PizzaVM();
+            pizzaVm.AllIngredient = Pizza.IngredientsDisponibles.Select(p => new SelectListItem { 
+                Text = p.Nom, Value = p.Id.ToString() }).ToList();
+            pizzaVm.AllPate = Pizza.PatesDisponibles.Select(p => new SelectListItem
+            {
+                Text = p.Nom,
+                Value = p.Id.ToString()
+            }).ToList();
+            return View(pizzaVm);
         }
 
         // POST: Pizza/Create
@@ -44,7 +52,18 @@ namespace Module5TP2.Controllers
         {
             try
             {
-                pizzas.Add(pizzaVm.Pizza);
+                Pizza pizza = pizzaVm.Pizza;
+
+                // Création des listes dans l'objet pizza résultat
+                pizza.Pate = Pizza.PatesDisponibles.FirstOrDefault(x => x.Id == pizzaVm.IdPate);
+
+                pizza.Ingredients = Pizza.IngredientsDisponibles.Where(
+                    x => pizzaVm.IdsIngredients.Contains(x.Id))
+                    .ToList();
+
+                pizza.Id = pizzas.Count == 0 ? 1 : pizzas.Max(x => x.Id) + 1;
+
+                pizzas.Add(pizza);
 
                 return RedirectToAction("Index");
             }
@@ -57,16 +76,31 @@ namespace Module5TP2.Controllers
         // GET: Pizza/Edit/5
         public ActionResult Edit(int id)
         {
-            Pizza pizz = pizzas.FirstOrDefault(p => p.Id == id);
-            if (pizz != null)
+            PizzaVM vm = new PizzaVM();
+
+            vm.AllPate = Pizza.PatesDisponibles.Select(
+                x => new SelectListItem { Text = x.Nom, Value = x.Id.ToString() })
+                .ToList();
+
+            vm.AllIngredient = Pizza.IngredientsDisponibles.Select(
+                x => new SelectListItem { Text = x.Nom, Value = x.Id.ToString() })
+                .ToList();
+
+            vm.Pizza = pizzas.FirstOrDefault(p => p.Id == id);
+
+
+            // Ajout pate/Ingrédients
+            if (vm.Pizza.Pate != null)
             {
-                PizzaVM pizzaVM = new PizzaVM(pizz);
-                return View(pizzaVM);
+                vm.IdPate = vm.Pizza.Pate.Id;
             }
-            else
+
+            if (vm.Pizza.Ingredients.Any())
             {
-                return RedirectToAction("Index");
+                vm.IdsIngredients = vm.Pizza.Ingredients.Select(x => x.Id).ToList();
             }
+
+            return View(vm);
         }
 
         // POST: Pizza/Edit/5
@@ -79,8 +113,8 @@ namespace Module5TP2.Controllers
                 if (pizzaDb != null)
                 {
                     pizzaDb.Nom = pizzaVm.Pizza.Nom;
-                    pizzaDb.Ingredients = pizzaVm.Pizza.Ingredients;
-                    pizzaDb.Pate = pizzaVm.Pizza.Pate;
+                    pizzaDb.Pate = Pizza.PatesDisponibles.FirstOrDefault(x => x.Id == pizzaVm.IdPate);
+                    pizzaDb.Ingredients = Pizza.IngredientsDisponibles.Where(x => pizzaVm.IdsIngredients.Contains(x.Id)).ToList();
 
                     return RedirectToAction("Index");
                 }

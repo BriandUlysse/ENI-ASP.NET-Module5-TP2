@@ -24,14 +24,20 @@
         </div>
     </div>
 
-
-    @Html.DropDownListFor(model => model.Pizza.Pate
-        , Model.AllPate.Select(p => new SelectListItem { Text = p.Nom, Value = p.Id.ToString() })
-        , new { htmlAttributes = new { @class = "form-control" } })
-
-    @Html.ListBoxFor(model => model.Pizza.Ingredients
-        , Model.AllIngredient.Select(p => new SelectListItem { Text = p.Nom, Value = p.Id.ToString() })
-        , new { htmlAttributes = new { @class = "form-control" } })
+    <div class="form-group">
+        @Html.LabelFor(model => model.Pizza.Pate, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.DropDownListFor(model => model.IdPate, Model.AllPate, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Pizza.Pate, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Pizza.Ingredients, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.ListBoxFor(model => model.IdsIngredients, Model.AllIngredient, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Pizza.Ingredients, "", new { @class = "text-danger" })
+        </div>
+    </div>
 
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
